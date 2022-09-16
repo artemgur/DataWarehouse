@@ -52,7 +52,7 @@ def generate_products(rows_to_generate=1000, infinite=False):
                     product['ram'] = random.choice([2, 4, 8, 16, 32])
                     product['ram_slots'] = random.randint(1, 4)
                 case 'Printer':
-                    product['color'] = random.choice([True, False])
+                    product['color_printer'] = random.choice([True, False])
                 case 'Monitor':
                     product['refresh_rate'] = random.choice([60, 90, 120, 144])
                 case 'Smartphone':
