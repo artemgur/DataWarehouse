@@ -18,4 +18,6 @@ class ProductsTask(luigi.Task):
             INSERT INTO products(manufacturer, model, length, width, height, weight, category, attributes)
             VALUES (%(manufacturer)s, %(model)s, %(length)s, %(width)s, %(height)s, %(weight)s, %(category)s, %(attributes)s)
             ON CONFLICT (products_manufacturer_model)
-            DO UPDATE SET attributes = attributes || %(attributes)s""", products)
+            DO UPDATE SET attributes = attributes || %(attributes)s
+            RETURNING id, manufacturer, model
+            """, products)
