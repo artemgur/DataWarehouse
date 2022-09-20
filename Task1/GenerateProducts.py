@@ -62,8 +62,9 @@ def generate_products(rows_to_generate=1000, infinite=False):
                 duplicated_rows.append(product)
         product['url'] = url
         product['query_time'] = str(fake.date_time_this_month())
-        yield json.dumps(product, ensure_ascii=False)
+        yield product  # json.dumps(product, ensure_ascii=False)
 
 
-for product in generate_products(10):
-    print(product)
+if __name__ == '__main__':
+    for product in generate_products(10):
+        print(product)
