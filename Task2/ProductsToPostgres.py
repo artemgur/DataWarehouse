@@ -14,10 +14,12 @@ class ProductsTask(luigi.Task):
             products_json = input_target.read()
         products = json.loads(products_json)
         with connection.cursor() as cursor:
-            cursor.execute("""
+            cursor.execute("DECLARE returning_result%ROWTYPE;")
+            cursor.execute("""           
             INSERT INTO products(manufacturer, model, length, width, height, weight, category, attributes)
             VALUES (%(manufacturer)s, %(model)s, %(length)s, %(width)s, %(height)s, %(weight)s, %(category)s, %(attributes)s)
             ON CONFLICT (products_manufacturer_model)
             DO UPDATE SET attributes = attributes || %(attributes)s
-            RETURNING id, manufacturer, model
+            RETURNING id, manufacturer, model INTO returning_result;
             """, products)
+            cursor.execute()

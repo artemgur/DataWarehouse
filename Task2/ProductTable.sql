@@ -17,6 +17,7 @@ CREATE INDEX products_manufacturer_model ON products(manufacturer, model);
 CREATE TABLE product_prices(
     product_id int NOT NULL,
     source_store_id int NOT NULL,
+    product_source_store_url TEXT NOT NULL,
     price int NOT NULL CHECK (price > 0),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE
