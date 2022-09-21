@@ -64,7 +64,7 @@ def generate_products(rows_to_generate=1000, infinite=False):
 
         product['source_store_id'] = source_store_id
         product['url'] = url
-        product['query_time'] = str(fake.date_time_this_month())
+        #product['query_time'] = str(fake.date_time_this_month())
         yield product  # json.dumps(product, ensure_ascii=False)
 
 
