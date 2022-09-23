@@ -28,7 +28,7 @@ def generate_products(rows_to_generate=1000, infinite=False):
     for i in range(rows_to_generate):
         if infinite:
             i -= 2
-        source_store_id = random.randint(1, 100)
+        source_store_id = random.randint(0, 99)
         url = domain_list[source_store_id] + '/' + fake.md5()
 
         if len(duplicated_rows) > 0 and random.random() > 0.5:
@@ -36,8 +36,8 @@ def generate_products(rows_to_generate=1000, infinite=False):
             product = duplicated_rows[product_index]
             #product['url'] =
             product['price'] = int(product['price'] * random.uniform(0.8, 1.2))
-            if 'color' not in product:
-                product['color'] = random.choice(colors)
+            if 'color' not in product['attributes']:
+                product['attributes']['color'] = random.choice(colors)
             if random.random() > 0.5:
                 duplicated_rows.pop(product_index)
         else:
@@ -45,20 +45,20 @@ def generate_products(rows_to_generate=1000, infinite=False):
                        'model': fake.md5()[:6], 'price': random.randint(1000, 100000),
                        'length': random.randint(10, 100), 'width': random.randint(10, 100),
                        'height': random.randint(10, 100), 'weight': round(random.uniform(0.1, 4), 1),
-                       'category': random.choice(category)}
+                       'category': random.choice(category), 'attributes': {}}
             match product['category']:
                 case 'Laptop':
-                    product['touchscreen'] = random.choice([True, False])
+                    product['attributes']['touchscreen'] = random.choice([True, False])
                 case 'PC':
-                    product['ram'] = random.choice([2, 4, 8, 16, 32])
-                    product['ram_slots'] = random.randint(1, 4)
+                    product['attributes']['ram'] = random.choice([2, 4, 8, 16, 32])
+                    product['attributes']['ram_slots'] = random.randint(1, 4)
                 case 'Printer':
-                    product['color_printer'] = random.choice([True, False])
+                    product['attributes']['color_printer'] = random.choice([True, False])
                 case 'Monitor':
-                    product['refresh_rate'] = random.choice([60, 90, 120, 144])
+                    product['attributes']['refresh_rate'] = random.choice([60, 90, 120, 144])
                 case 'Smartphone':
-                    product['ram'] = random.choice([2, 4, 8, 16, 32])
-                    product['sim_count'] = random.randint(1, 2)
+                    product['attributes']['ram'] = random.choice([2, 4, 8, 16, 32])
+                    product['attributes']['sim_count'] = random.randint(1, 2)
             if len(duplicated_rows) < rows_to_duplicate:
                 duplicated_rows.append(product)
 

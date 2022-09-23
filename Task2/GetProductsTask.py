@@ -3,7 +3,11 @@ import random
 from itertools import islice
 import json
 import luigi
-from ..Task1.GenerateProducts import generate_products
+#from ..Task1.GenerateProducts import generate_products
+
+import sys
+sys.path.append("../Task1")
+from GenerateProducts import generate_products
 
 
 products_count = 1200
@@ -12,7 +16,7 @@ max_batch_size = 50
 time_between_batches = 0.1
 
 
-class GetProducts(luigi.Task):
+class GetProductsTask(luigi.Task):
     def output(self):
         return luigi.LocalTarget('products.txt')
 

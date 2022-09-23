@@ -12,7 +12,7 @@ CREATE TABLE products(
     attributes jsonb NOT NULL
 );
 
-CREATE INDEX products_manufacturer_model ON products(manufacturer, model);
+CREATE UNIQUE INDEX products_manufacturer_model ON products(manufacturer, model);
 
 CREATE TABLE product_prices(
     product_id int NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE product_prices(
     FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE
 );
 
-CREATE TABLE product_temporary(
+CREATE TABLE products_temporary(
     manufacturer varchar(20),
     model varchar(20),
     length int,
@@ -38,18 +38,19 @@ CREATE TABLE product_temporary(
 );
 
 CREATE OR REPLACE PROCEDURE products_from_temporary() AS $$
-DECLARE products_returning TABLE(product_id int, manufacturer varchar(20), model varchar(20));
+DECLARE products_returning record;--TABLE(product_id int, manufacturer varchar(20), model varchar(20));
 BEGIN
+
     INSERT INTO products(manufacturer, model, length, width, height, weight, category, attributes)
-        SELECT manufacturer, model, length, width, height, weight, category, attributes FROM product_temporary
+        SELECT manufacturer, model, length, width, height, weight, category, attributes FROM products_temporary
         ON CONFLICT (manufacturer, model)
-            DO UPDATE SET attributes = products.attributes || product_temporary.attributes
-        RETURNING id, manufacturer, model INTO products_returning;
+            DO UPDATE SET attributes = products.attributes || excluded.attributes
+        RETURNING id AS product_id, manufacturer, model INTO products_returning;
 
     INSERT INTO product_prices
-    SELECT product_id, source_store_id, url, price FROM product_temporary AS pt
+    SELECT product_id, source_store_id, url, price FROM products_temporary AS pt
         JOIN products_returning AS pr ON pt.manufacturer = pr.manufacturer AND pt.model = pr.model;
 
-    TRUNCATE TABLE product_temporary;
+    TRUNCATE TABLE products_temporary;
 END;
 $$ LANGUAGE plpgsql

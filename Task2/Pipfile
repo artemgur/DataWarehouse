@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 luigi = "*"
 psycopg2 = "*"
+faker = "*"
 
 [dev-packages]
 
