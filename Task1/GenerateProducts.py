@@ -31,7 +31,7 @@ def generate_products(rows_to_generate=1000, infinite=False):
         source_store_id = random.randint(0, 99)
         url = domain_list[source_store_id] + '/' + fake.md5()
 
-        if len(duplicated_rows) > 0 and random.random() > 0.5:
+        if len(duplicated_rows) > 0 and random.random() > 0.95:
             product_index = random.randint(0, len(duplicated_rows) - 1)
             product = duplicated_rows[product_index]
             #product['url'] =
@@ -62,7 +62,7 @@ def generate_products(rows_to_generate=1000, infinite=False):
             if len(duplicated_rows) < rows_to_duplicate:
                 duplicated_rows.append(product)
 
-        product['source_store_id'] = source_store_id
+        product['source_store_id'] = source_store_id + 1
         product['url'] = url
         #product['query_time'] = str(fake.date_time_this_month())
         yield product  # json.dumps(product, ensure_ascii=False)
