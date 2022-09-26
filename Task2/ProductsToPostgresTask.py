@@ -10,7 +10,7 @@ class ProductsToPostgresTask(luigi.Task):
         return GetProductsTask()
 
     def run(self):
-        connection = psycopg2.connect(dbname='task2', user='postgres', password='postgrespw', host='localhost', port=49153)
+        connection = psycopg2.connect(dbname='task2', user='postgres', password='postgres', host='localhost', port=5432)
         with self.input().open('r') as input_target:
             products_json = input_target.read()
         products = json.loads(products_json)

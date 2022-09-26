@@ -5,7 +5,7 @@ from faker import Faker
 
 
 def generate_event_view(fake):
-    return {'user_id': random.randint(1, 100000), 'product_id': random.randint(1, 100000),
+    return {'user_id': random.randint(1, 1000), 'product_id': random.randint(1, 1000),
                  'time': fake.date_time_this_month(), 'city': random.choice(cities)}
 
 
@@ -20,7 +20,7 @@ cities = ['Казань', 'Москва', 'Санкт-Петербург', 'Ом
 fake = Faker('ru_RU')
 
 
-client = Client(port=49354, user='default', password='', host='localhost')
+client = Client(port=9000, user='default', password='', host='localhost')
 #print(client.execute('SHOW databases'))
 
 client.execute('''

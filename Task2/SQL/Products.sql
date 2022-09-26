@@ -43,14 +43,6 @@ CREATE OR REPLACE FUNCTION json_aggregate_step(aggregated jsonb, new jsonb) RETU
     END;
 $$ LANGUAGE plpgsql;
 
-
-
--- CREATE OR REPLACE FUNCTION json_aggregate_final(aggregated jsonb) RETURNS jsonb AS $$
---     BEGIN
---         RETURN aggregated;
---     END;
--- $$ LANGUAGE plpgsql;
-
 CREATE AGGREGATE json_aggregate(jsonb)(
     SFUNC = json_aggregate_step,
     STYPE = jsonb,
@@ -66,15 +58,15 @@ $$ LANGUAGE plpgsql;
 CREATE AGGREGATE last_aggregate(anyelement)(
     SFUNC = last_aggregate_step,
     STYPE = anyelement
-    --INITCOND = '{}'
     );
 
 CREATE OR REPLACE PROCEDURE products_from_temporary() AS $$
-DECLARE products_returning record;--TABLE(product_id int, manufacturer varchar(20), model varchar(20));
+DECLARE products_returning record;
 BEGIN
     WITH products_temporary_aggregated AS (
-        SELECT manufacturer, model, last_aggregate(length) AS length, last_aggregate(width) AS width, last_aggregate(height) AS height,
-               last_aggregate(weight) AS weight, last_aggregate(category) AS category, json_aggregate(attributes) AS attributes FROM products_temporary
+        SELECT manufacturer, model, last_aggregate(length) AS length, last_aggregate(width) AS width,
+               last_aggregate(height) AS height, last_aggregate(weight) AS weight, last_aggregate(category) AS category,
+               json_aggregate(attributes) AS attributes FROM products_temporary
         GROUP BY (manufacturer, model)
     ),
         products_returning AS (

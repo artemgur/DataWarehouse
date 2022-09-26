@@ -7,6 +7,7 @@ name = "pypi"
 luigi = "*"
 psycopg2 = "*"
 faker = "*"
+clickhouse-driver = "*"
 
 [dev-packages]
 

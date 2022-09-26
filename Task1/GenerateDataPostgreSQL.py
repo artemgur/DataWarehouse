@@ -9,7 +9,7 @@ def fake_phone_number(fake: Faker) -> str:
 rows_to_generate = 100
 fake = Faker('ru_RU')
 
-connection = psycopg2.connect(dbname='postgres', user='postgres', password='postgrespw', host='localhost', port=49153)
+connection = psycopg2.connect(dbname='postgres', user='postgres', password='postgres', host='localhost', port=5432)
 with connection.cursor() as cursor:
     cursor.execute('DROP TABLE IF EXISTS source_stores')
     cursor.execute('''
