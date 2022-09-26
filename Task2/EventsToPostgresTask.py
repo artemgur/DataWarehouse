@@ -3,7 +3,6 @@ import datetime
 import luigi
 from clickhouse_driver import Client
 
-
 class EventsToProductsTask(luigi.Task):
     def run(self):
         client = Client(port=9000, user='default', password='', host='localhost')

@@ -16,7 +16,6 @@ class ProductsToPostgresTask(luigi.Task):
         products = json.loads(products_json)
         for product in products:
             product['attributes'] = json.dumps(product['attributes'], ensure_ascii=False)
-        #print(products)
         with connection.cursor() as cursor:
             cursor.executemany("""           
             INSERT INTO products_temporary
