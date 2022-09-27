@@ -61,7 +61,6 @@ CREATE OR REPLACE AGGREGATE last_aggregate(anyelement)(
 );
 
 CREATE OR REPLACE PROCEDURE products_from_temporary() AS $$
-BEGIN
     WITH products_temporary_aggregated AS (
         SELECT manufacturer, model, last_aggregate(length) AS length, last_aggregate(width) AS width,
                last_aggregate(height) AS height, last_aggregate(weight) AS weight, last_aggregate(category) AS category,
@@ -73,12 +72,13 @@ BEGIN
             SELECT manufacturer, model, length, width, height, weight, category, attributes
             FROM products_temporary_aggregated
             ON CONFLICT (manufacturer, model)
-                DO UPDATE SET attributes = products.attributes || excluded.attributes
+                DO UPDATE SET length = excluded.length, width = excluded.width, height = excluded.height,
+                    weight = excluded.weight, category = excluded.category,
+                    attributes = products.attributes || excluded.attributes
             RETURNING id AS product_id, manufacturer, model)
     INSERT INTO product_prices
     SELECT product_id, source_store_id, url, price FROM products_temporary AS pt
         JOIN products_returning AS pr ON pt.manufacturer = pr.manufacturer AND pt.model = pr.model;
 
     TRUNCATE TABLE products_temporary;
-END;
 $$ LANGUAGE sql
