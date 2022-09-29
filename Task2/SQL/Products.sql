@@ -20,7 +20,8 @@ CREATE TABLE product_prices(
     product_source_store_url TEXT NOT NULL,
     price int NOT NULL CHECK (price > 0),
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE
+    FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE,
+    UNIQUE (product_id, source_store_id)
 );
 
 CREATE TABLE products_temporary(
@@ -75,10 +76,19 @@ CREATE OR REPLACE PROCEDURE products_from_temporary() AS $$
                 DO UPDATE SET length = excluded.length, width = excluded.width, height = excluded.height,
                     weight = excluded.weight, category = excluded.category,
                     attributes = products.attributes || excluded.attributes
-            RETURNING id AS product_id, manufacturer, model)
+            RETURNING id AS product_id, manufacturer, model
+    ),
+    products_temporary_aggregated_prices AS (
+        SELECT manufacturer, model, source_store_id,
+               last_aggregate(url) AS product_source_store_url, last_aggregate(price) AS price
+        FROM products_temporary
+        GROUP BY (manufacturer, model, source_store_id)
+    )
     INSERT INTO product_prices
-    SELECT product_id, source_store_id, url, price FROM products_temporary AS pt
-        JOIN products_returning AS pr ON pt.manufacturer = pr.manufacturer AND pt.model = pr.model;
+    SELECT product_id, source_store_id, product_source_store_url, price FROM products_temporary_aggregated_prices AS pt
+        JOIN products_returning AS pr ON pt.manufacturer = pr.manufacturer AND pt.model = pr.model
+        ON CONFLICT (product_id, source_store_id)
+            DO UPDATE SET price = excluded.price, product_source_store_url = excluded.product_source_store_url;
 
     TRUNCATE TABLE products_temporary;
 $$ LANGUAGE sql
