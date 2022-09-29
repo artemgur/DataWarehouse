@@ -3,7 +3,6 @@ CREATE TYPE city_type as ENUM ('Казань', 'Москва', 'Санкт-Пе�
 CREATE TABLE IF NOT EXISTS event_view(
     user_id int,
     product_id int,
-    source_store_id int,
     time timestamp,
     city city_type,
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,

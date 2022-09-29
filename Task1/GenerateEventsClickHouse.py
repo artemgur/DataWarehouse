@@ -43,4 +43,4 @@ CREATE TABLE IF NOT EXISTS event_store_link_click(
 ) ENGINE = MergeTree()
 ORDER BY time''')
 client.execute('INSERT INTO event_store_link_click VALUES',
-               [generate_event_store_link_click(fake) for i in range(rows_to_generate)])
+               [generate_event_store_link_click(fake) for i in range(int(rows_to_generate / 10))])
