@@ -1,0 +1,48 @@
+services:
+  metabase:
+    container_name: metabase
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      artemgur_network:
+        ipv4_address: 172.20.0.4
+  clickhouse:
+    container_name: clickhouse
+    image: yandex/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "9009:9009"
+    depends_on:
+      - postgres
+    networks:
+      artemgur_network:
+        ipv4_address: 172.20.0.3
+  postgres:
+    container_name: postgres
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      artemgur_network:
+        ipv4_address: 172.20.0.2
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      artemgur_network:
+        - ipv4_address: 172.20.0.5
+networks:
+  artemgur_network:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
