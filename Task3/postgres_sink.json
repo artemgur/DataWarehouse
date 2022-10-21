@@ -1,0 +1,23 @@
+{
+    "name": "postgres_sink_connector",
+    "config": {
+        "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+        "topics": "postgres_source.public.source_stores",
+        "connection.url": "jdbc:postgresql://postgres_hub:5432/postgres?user=postgres&password=postgres",
+        "auto.create": "true",
+        "insert.mode": "upsert",
+        "pk.fields": "id",
+        "pk.mode": "record_key",
+        "delete.enabled": "true",
+        "transforms": "route,unwrap,ts_updated_at",
+        "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+        "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
+        "transforms.route.replacement": "postgres.public.$3",
+        "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
+        "transforms.unwrap.drop.tombstones": "false",
+        "transforms.ts_updated_at.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",
+        "transforms.ts_updated_at.target.type": "Timestamp",
+        "transforms.ts_updated_at.field": "updated_at",
+        "transforms.ts_updated_at.format": "yyyy-MM-dd'T'HH:mm:ssXXX"
+    }
+}
