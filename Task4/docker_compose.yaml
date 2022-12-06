@@ -1,0 +1,202 @@
+version: '3.7'
+
+x-common:
+  &common
+  image: apache/airflow
+  user: "${AIRFLOW_UID}:0"
+  env_file:
+    - .env
+  volumes:
+    - ./docker_airflow/dags:/opt/airflow/dags
+    - ./docker_airflow/logs:/opt/airflow/logs
+    - ./docker_airflow/plugins:/opt/airflow/plugins
+    - /var/run/docker.sock:/var/run/docker.sock
+
+x-depends-on:
+  &depends-on
+  depends_on:
+    postgres_airflow:
+      condition: service_healthy
+    airflow-init:
+      condition: service_completed_successfully
+
+services:
+  metabase:
+    container_name: metabase
+    image: metabase/metabase:latest
+    ports:
+      - "3001:3000"
+    links:
+      - postgres_hub
+  clickhouse:
+    container_name: clickhouse
+    image: yandex/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "9009:9009"
+    links:
+      - postgres_hub
+  zookeeper:
+    image: quay.io/debezium/zookeeper
+    ports:
+     - "2181:2181"
+     - "2888:2888"
+     - "3888:3888"
+  kafka:
+    image: quay.io/debezium/kafka
+    ports:
+     - "9092:9092"
+    links:
+     - zookeeper
+    environment:
+     - ZOOKEEPER_CONNECT=zookeeper:2181
+  postgres_source:
+    image: postgres
+    ports:
+     - "5433:5432"
+    environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+  postgres_hub:
+    image: postgres
+    ports:
+     - "5432:5432"
+    environment:
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=postgres
+  connect:
+    #image: quay.io/debezium/connect
+    build:
+      context: .
+      dockerfile: ../Task3/connect.Dockerfile
+    ports:
+     - "8083:8083"
+    links:
+     - kafka
+     - postgres_source
+     - postgres_hub
+    environment:
+     - BOOTSTRAP_SERVERS=kafka:9092
+     - GROUP_ID=1
+     - CONFIG_STORAGE_TOPIC=my_connect_configs
+     - OFFSET_STORAGE_TOPIC=my_connect_offsets
+     - STATUS_STORAGE_TOPIC=my_connect_statuses
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    ports:
+      - "8081:8080"
+    #restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=localhost:2181
+    links:
+      - kafka
+      - zookeeper
+  postgres_airflow:
+    image: postgres
+    container_name: postgres
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+    env_file:
+      - .env
+
+  scheduler:
+    <<: *common
+    <<: *depends-on
+    container_name: airflow-scheduler
+    command: scheduler
+    restart: on-failure
+    ports:
+      - "8793:8793"
+
+  webserver:
+    <<: *common
+    <<: *depends-on
+    container_name: airflow-webserver
+    restart: always
+    command: webserver
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "http://localhost:8080/health" ]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+
+  airflow-init:
+    <<: *common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        mkdir -p /sources/logs /sources/dags /sources/plugins
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        exec /entrypoint airflow version
+  api:
+    image: "marquezproject/marquez"
+    container_name: marquez-api
+    environment:
+      - MARQUEZ_PORT=${API_PORT}
+      - MARQUEZ_ADMIN_PORT=${API_ADMIN_PORT}
+    ports:
+      - "${API_PORT}:${API_PORT}"
+      - "${API_ADMIN_PORT}:${API_ADMIN_PORT}"
+    volumes:
+      - utils:/opt/marquez
+    links:
+      - "db:postgres"
+    depends_on:
+      - db
+    entrypoint: [ "/opt/marquez/wait-for-it.sh", "db:5435", "--", "./entrypoint.sh" ]
+
+  web:
+    image: "marquezproject/marquez-web"
+    container_name: marquez-web
+    environment:
+      - MARQUEZ_HOST=api
+      - MARQUEZ_PORT=${API_PORT}
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    stdin_open: true
+    tty: true
+    depends_on:
+      - api
+
+  db:
+    image: postgres
+    container_name: marquez-db
+    ports:
+      - "5435:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - MARQUEZ_DB=marquez
+      - MARQUEZ_USER=marquez
+      - MARQUEZ_PASSWORD=marquez
+    volumes:
+      - ./docker_marquez/postgresql.conf:/etc/postgresql/postgresql.conf
+      - db-init:/docker-entrypoint-initdb.d
+    command: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
+    # Enables SQL statement logging (see: https://www.postgresql.org/docs/12/runtime-config-logging.html#GUC-LOG-STATEMENT)
+    # command: ["postgres", "-c", "log_statement=all"]
+
+volumes:
+  utils:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/utils'
+  db-init:
+    driver: local
+    driver_opts:
+      type: 'none'
+      o: 'bind'
+      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/db-init'

@@ -9,5 +9,6 @@ def add_connector(filename):
     print(response.text)
 
 
-#add_connector('postgres_debezium_source.json')
-add_connector('postgres_sink.json')
+if __name__ == '__main__':
+    # add_connector('postgres_debezium_source.json')
+    add_connector('postgres_sink.json')

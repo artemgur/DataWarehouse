@@ -6,5 +6,6 @@ def delete_connector(connector_name):
     print(response.text)
 
 
-#delete_connector('postgres_debezium_source_connector')
-delete_connector('postgres_sink_connector')
+if __name__ == '__main__':
+    # delete_connector('postgres_debezium_source_connector')
+    delete_connector('postgres_sink_connector')
