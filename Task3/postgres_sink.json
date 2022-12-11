@@ -2,7 +2,7 @@
     "name": "postgres_sink_connector",
     "config": {
         "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
-        "topics": "postgres_source.public.source_stores",
+        "topics": "debezium.public.source_stores",
         "connection.url": "jdbc:postgresql://postgres_hub:5432/postgres?user=postgres&password=postgres",
         "auto.create": "true",
         "insert.mode": "upsert",
@@ -12,7 +12,7 @@
         "transforms": "route,unwrap,ts_updated_at",
         "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
         "transforms.route.regex": "([^.]+)\\.([^.]+)\\.([^.]+)",
-        "transforms.route.replacement": "postgres.public.$3",
+        "transforms.route.replacement": "postgres.public.source_stores",
         "transforms.unwrap.type": "io.debezium.transforms.ExtractNewRecordState",
         "transforms.unwrap.drop.tombstones": "false",
         "transforms.ts_updated_at.type": "org.apache.kafka.connect.transforms.TimestampConverter$Value",

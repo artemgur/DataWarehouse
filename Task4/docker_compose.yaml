@@ -2,10 +2,16 @@ version: '3.7'
 
 x-common:
   &common
-  image: apache/airflow
+  #image: apache/airflow
+
+  build:
+    context: .
+    dockerfile: airflow.Dockerfile
   user: "${AIRFLOW_UID}:0"
   env_file:
     - .env
+  #environment:
+  #  _PIP_ADDITIONAL_REQUIREMENTS: openlineage-airflow==0.17.0
   volumes:
     - ./docker_airflow/dags:/opt/airflow/dags
     - ./docker_airflow/logs:/opt/airflow/logs
@@ -38,13 +44,13 @@ services:
     links:
       - postgres_hub
   zookeeper:
-    image: quay.io/debezium/zookeeper
+    image: debezium/zookeeper:2.0
     ports:
      - "2181:2181"
      - "2888:2888"
      - "3888:3888"
   kafka:
-    image: quay.io/debezium/kafka
+    image: debezium/kafka:2.0
     ports:
      - "9092:9092"
     links:
@@ -66,7 +72,7 @@ services:
      - POSTGRES_USER=postgres
      - POSTGRES_PASSWORD=postgres
   connect:
-    #image: quay.io/debezium/connect
+    #image: debezium/connect
     build:
       context: .
       dockerfile: ../Task3/connect.Dockerfile
@@ -149,7 +155,7 @@ services:
       - "${API_PORT}:${API_PORT}"
       - "${API_ADMIN_PORT}:${API_ADMIN_PORT}"
     volumes:
-      - utils:/opt/marquez
+      - ./docker_marquez/utils:/opt/marquez
     links:
       - "db:postgres"
     depends_on:
@@ -182,21 +188,21 @@ services:
       - MARQUEZ_PASSWORD=marquez
     volumes:
       - ./docker_marquez/postgresql.conf:/etc/postgresql/postgresql.conf
-      - db-init:/docker-entrypoint-initdb.d
+      - ./docker_marquez/db-init:/docker-entrypoint-initdb.d
     command: [ "postgres", "-c", "config_file=/etc/postgresql/postgresql.conf" ]
     # Enables SQL statement logging (see: https://www.postgresql.org/docs/12/runtime-config-logging.html#GUC-LOG-STATEMENT)
     # command: ["postgres", "-c", "log_statement=all"]
 
-volumes:
-  utils:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/utils'
-  db-init:
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/db-init'
+#volumes:
+#  utils:
+#    driver: local
+#    driver_opts:
+#      type: 'none'
+#      o: 'bind'
+#      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/utils'
+#  db-init:
+#    driver: local
+#    driver_opts:
+#      type: 'none'
+#      o: 'bind'
+#      device: 'C:/Users/artemgur/Documents/Git/DataWarehouse/Task4/docker_marquez/db-init'

@@ -10,5 +10,5 @@ def add_connector(filename):
 
 
 if __name__ == '__main__':
-    # add_connector('postgres_debezium_source.json')
+    add_connector('postgres_debezium_source.json')
     add_connector('postgres_sink.json')

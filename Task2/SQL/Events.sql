@@ -1,3 +1,4 @@
+--DROP TYPE city_type;
 CREATE TYPE city_type as ENUM ('Казань', 'Москва', 'Санкт-Петербург', 'Омск', 'Владивосток');
 
 CREATE TABLE IF NOT EXISTS event_view(
@@ -5,8 +6,8 @@ CREATE TABLE IF NOT EXISTS event_view(
     product_id int,
     time timestamp,
     city city_type,
-    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    --FOREIGN KEY (source_store_id) REFERENCES source_stores(id) ON DELETE CASCADE
 );
 
 CREATE INDEX event_view_time ON event_view(time);

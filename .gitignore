@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 
 .idea/
+Task4/docker_airflow/logs

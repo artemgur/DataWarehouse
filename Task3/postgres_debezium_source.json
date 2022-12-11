@@ -11,6 +11,7 @@
     "database.server.name": "postgres_source",
     "table.include.list": "public.source_stores",
     "slot.name": "postgres_debezium_source_slot",
-    "publication.name": "postgres_debezium_source_publication"
+    "publication.name": "postgres_debezium_source_publication",
+    "topic.prefix": "debezium"
   }
 }
